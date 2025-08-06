@@ -22,4 +22,21 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+         <repositories>
+           <!-- PaperMC 저장소: spigot/paper API SNAPSHOT -->
+           <repository>
+             <id>papermc-repo</id>
+             <url>https://repo.papermc.io/repository/maven-public/</url>
+           </repository>
+         
+           <!-- Spigot 공식 스냅샷 저장소 -->
+           <repository>
+             <id>spigot-repo</id>
+             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+           </repository>
+         
+           <!-- Vault API는 Maven Central에 없으므로 직접 설치하거나 별도 repo -->
+           <!-- 보통은 Vault API 직접 설치(로컬) 권장 -->
+         </repositories>
+
 </project>
