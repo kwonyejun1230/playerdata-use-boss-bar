@@ -1,29 +1,32 @@
-package com.example.playerinfobossbar;
+package me.yourname.bossbarinfo;
 
 import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.query.QueryOptions;
+
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
-import org.bukkit.boss.BossBar;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import net.milkbowl.vault.permission.Permission;
-import org.bukkit.plugin.RegisteredServiceProvider;
 
-public class PlayerInfoBossBarPlugin extends JavaPlugin {
+import java.util.HashMap;
+import java.util.UUID;
 
-    private Permission perms;
+public class BossBarInfo extends JavaPlugin {
+
+    private LuckPerms luckPerms;
+    private final HashMap<UUID, BossBar> bossBars = new HashMap<>();
 
     @Override
     public void onEnable() {
-        if (!setupPermissions()) {
-            getLogger().warning("Vault + LuckPerms not found! Disabling plugin...");
-            getServer().getPluginManager().disablePlugin(this);
+        try {
+            luckPerms = LuckPermsProvider.get();
+        } catch (IllegalStateException e) {
+            getLogger().warning("LuckPerms API를 찾을 수 없습니다. LuckPerms 플러그인이 필요합니다.");
             return;
         }
 
@@ -31,28 +34,47 @@ public class PlayerInfoBossBarPlugin extends JavaPlugin {
             @Override
             public void run() {
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    String group = perms.getPrimaryGroup(player);
-                    Location loc = player.getLocation();
-                    String barText = String.format("§b%s §7| UUID: §f%s §7| §aX: %.1f Y: %.1f Z: %.1f §7| Group: §e%s",
-                            player.getName(), player.getUniqueId().toString().substring(0, 8),
-                            loc.getX(), loc.getY(), loc.getZ(), group);
-                    BossBar bar = Bukkit.createBossBar(barText, BarColor.BLUE, BarStyle.SEGMENTED_10);
-                    bar.setProgress(1.0);
-                    bar.addPlayer(player);
-                    bar.setVisible(true);
+                    UUID uuid = player.getUniqueId();
 
-                    // Hide after a while
-                    Bukkit.getScheduler().runTaskLater(PlayerInfoBossBarPlugin.this, () -> {
-                        bar.removeAll();
-                    }, 40L);
+                    // 플레이어 그룹 가져오기 (LuckPerms)
+                    String group = "Unknown";
+                    User user = luckPerms.getUserManager().getUser(uuid);
+                    if (user != null) {
+                        QueryOptions queryOptions = luckPerms.getContextManager()
+                            .getQueryOptions(user)
+                            .orElse(QueryOptions.defaultContextualOptions());
+                        group = user.getPrimaryGroup(queryOptions);
+                    }
+
+                    String coords = String.format("X: %.1f Y: %.1f Z: %.1f",
+                        player.getLocation().getX(),
+                        player.getLocation().getY(),
+                        player.getLocation().getZ());
+
+                    String title = String.format("%s (%s) | %s | Group: %s",
+                        player.getName(),
+                        uuid.toString().substring(0,8),
+                        coords,
+                        group);
+
+                    BossBar bar = bossBars.computeIfAbsent(uuid, id -> 
+                        Bukkit.createBossBar("", BarColor.BLUE, BarStyle.SOLID));
+
+                    bar.setTitle(title);
+                    bar.setProgress(1.0);
+                    bar.setVisible(true);
+                    bar.addPlayer(player);
                 }
             }
-        }.runTaskTimer(this, 0L, 60L);
+        }.runTaskTimer(this, 0L, 10L); // 2초마다 갱신
     }
 
-    private boolean setupPermissions() {
-        RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
-        perms = rsp.getProvider();
-        return perms != null;
+    @Override
+    public void onDisable() {
+        bossBars.values().forEach(bar -> {
+            bar.removeAll();
+            bar.setVisible(false);
+        });
+        bossBars.clear();
     }
 }
