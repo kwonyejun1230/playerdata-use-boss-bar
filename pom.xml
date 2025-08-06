@@ -7,21 +7,6 @@
     <version>1.0</version>
     <packaging>jar</packaging>
     <name>PlayerInfoBossBar</name>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.21.6-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.milkbowl.vault</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
          <repositories>
            <!-- PaperMC 저장소: spigot/paper API SNAPSHOT -->
            <repository>
@@ -38,5 +23,20 @@
            <!-- Vault API는 Maven Central에 없으므로 직접 설치하거나 별도 repo -->
            <!-- 보통은 Vault API 직접 설치(로컬) 권장 -->
          </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.21.6-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.7</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
 </project>
